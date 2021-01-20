@@ -34,8 +34,6 @@ class MainControl(QMainWindow):
         return
 
     def mouseGetPos(self,x,y):
-        posX = x
-        posY = y
         self.ui.coordLbl.setText(f"Coords: {x}, {y}")
 
 
