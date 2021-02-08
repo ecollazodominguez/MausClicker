@@ -8,8 +8,8 @@ from PyQt5 import QtCore
 from MausClickerUI import Ui_MainWindow
 from PyQt5.QtWidgets import QMainWindow
 from MouseTracking import MouseTracking
-from pynput.mouse import Controller, Button
-import time
+from KeyboardTracking import KeyboardTracking
+from ScriptRunner import ScriptRunner
 import sys
 
 
@@ -18,6 +18,9 @@ class MainControl(QMainWindow):
         QMainWindow.__init__(self, parent)
         # Creación MouseTracking class
         self.mouseTrack = MouseTracking()
+        self.keyboardTrack = KeyboardTracking()
+        self.keyboardTrack.pressedKeySignal.connect(self.keyMonitorize)
+        self.keyboardTrack.start()
         self.mouseTrack.start()
         # Señal del Thread que llamará el método MouseGetPos
         self.mouseTrack.my_signal.connect(self.mouseGetPos)
@@ -33,10 +36,12 @@ class MainControl(QMainWindow):
         # Botones
         self.ui.stopBtn.setEnabled(False)
         self.ui.playBtn.setEnabled(False)
+        self.ui.saveBtn.setEnabled(False)
 
         if self.ui.coordList.rowCount() > 0:
             self.ui.playBtn.setEnabled(True)
         self.ui.playBtn.clicked.connect(self.startScript)
+        self.ui.stopBtn.clicked.connect(self.activateUI)
 
         # Header de la tabla
         self.ui.coordList.setHorizontalHeaderLabels(("Coord X", "Coord Y", "Delay"))
@@ -49,10 +54,13 @@ class MainControl(QMainWindow):
         self.y = y
         self.ui.coordLbl.setText(f"Coords: {x}, {y}")
 
-    def keyPressEvent(self, qKeyEvent):
-        if qKeyEvent.key() == QtCore.Qt.Key_F7:
+    def keyMonitorize(self, key):
+        letra = str(key)
+
+        if letra == "Key.f7":
             self.ui.playBtn.setEnabled(True)
-            '''Al pulsar F7 añadimos las coordenadas a la tabla'''
+            self.ui.saveBtn.setEnabled(True)
+            #Al pulsar F7 añadimos las coordenadas a la tabla
             numRows = self.ui.coordList.rowCount() #Contamos las columnas que hay
             self.ui.coordList.insertRow(numRows) #Añadimos una nueva columna en función de las que haya
 
@@ -66,32 +74,48 @@ class MainControl(QMainWindow):
             self.ui.coordList.item(numRows, 1).setTextAlignment(QtCore.Qt.AlignCenter)
             self.ui.coordList.item(numRows, 2).setTextAlignment(QtCore.Qt.AlignCenter)
 
-        if qKeyEvent.key() == QtCore.Qt.Key_F6:
-            self.ui.stopBtn.setEnabled(True)
-            numRows = self.ui.coordList.rowCount()  # Contamos las columnas que hay
-            mouse = Controller() #Creamos un controller del raton
-            for row in range(numRows):
-                # Por cada columna existente cogemos los valores y movemos el ratón a las posiciones con su delay.
-                coordX = self.ui.coordList.item(row,0)
-                coordY = self.ui.coordList.item(row, 1)
-                delay = self.ui.coordList.item(row, 2)
-                time.sleep(int(delay.text())/1000)
-                mouse.position = (int(coordX.text()),int(coordY.text()))
-                mouse.click(Button.left, 1)
+        if letra == "Key.f6":
+            if self.script.isRunning() == False:
+                self.ui.stopBtn.setEnabled(True)
+                coordList = []
+                numRows = self.ui.coordList.rowCount()  # Contamos las columnas que hay
+                for row in range(numRows):
+                    # Por cada columna existente cogemos los valores y movemos el ratón a las posiciones con su delay.
+                    coordX = self.ui.coordList.item(row, 0)
+                    coordY = self.ui.coordList.item(row, 1)
+                    delay = self.ui.coordList.item(row, 2)
+                    coordList.append([coordX.text(), coordY.text(), delay.text()])
+
+                self.script = ScriptRunner(coordList, int(self.ui.lineEdit.text()))
+                self.script.finishSignal.connect(self.activateUI)
+                self.script.start()
+        if letra == "Key.f8":
+            if self.script.isRunning() == True:
+                self.script.stop()
+                self.activateUI()
+
     def startScript(self):
-        #TODO THREAD
         self.ui.stopBtn.setEnabled(True)
+        self.ui.lineEdit.setEnabled(False)
+        self.ui.saveBtn.setEnabled(False)
+        coordList = []
         numRows = self.ui.coordList.rowCount()  # Contamos las columnas que hay
-        mouse = Controller()  # Creamos un controller del raton
         for row in range(numRows):
             # Por cada columna existente cogemos los valores y movemos el ratón a las posiciones con su delay.
             coordX = self.ui.coordList.item(row, 0)
             coordY = self.ui.coordList.item(row, 1)
             delay = self.ui.coordList.item(row, 2)
-            time.sleep(int(delay.text()) / 1000)
-            mouse.position = (int(coordX.text()), int(coordY.text()))
-            mouse.click(Button.left, 1)
+            coordList.append([coordX.text(), coordY.text(), delay.text()])
 
+        self.script = ScriptRunner(coordList, int(self.ui.lineEdit.text()))
+        self.script.finishSignal.connect(self.activateUI)
+        self.script.start()
+
+    def activateUI(self):
+        self.ui.stopBtn.setEnabled(False)
+        self.ui.playBtn.setEnabled(True)
+        self.ui.saveBtn.setEnabled(True)
+        self.ui.lineEdit.setEnabled(True)
 
 def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)

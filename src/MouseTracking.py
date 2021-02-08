@@ -1,5 +1,5 @@
 '''
-Created on 20 jan. 2021
+Created on 27 jan. 2021
 
 @author: edu
 '''
@@ -23,30 +23,3 @@ class MouseTracking(QThread):
             if self.mousePos != self.mouse.position:
                 self.mousePos = self.mouse.position
                 self.my_signal.emit(self.mousePos[0],self.mousePos[1])
-
-    '''
-    mouse = Controller()
-
-    # Read pointer position
-    print('The current pointer position is {0}'.format(
-        mouse.position))
-
-    # Set pointer position
-    mouse.position = (10, 20)
-    print('Now we have moved it to {0}'.format(
-        mouse.position))
-
-    # Move pointer relative to current position
-    mouse.move(5, -5)
-
-    # Press and release
-    mouse.press(Button.left)
-    mouse.release(Button.left)
-
-    # Double click; this is different from pressing and releasing
-    # twice on macOS
-    mouse.click(Button.left, 2)
-
-    # Scroll two steps down
-    mouse.scroll(0, 2)
-    '''
