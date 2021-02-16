@@ -147,11 +147,11 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.label.setText(_translate("MainWindow", "Press F7 to save coordinates!! and F6 to Play!!"))
+        self.label.setText(_translate("MainWindow", "F7 to save coords!! F6 to Play!! and F8 to Stop!!"))
         self.coordLbl.setText(_translate("MainWindow", "Coords: 0, 0"))
         self.playBtn.setText(_translate("MainWindow", "Play"))
         self.stopBtn.setText(_translate("MainWindow", "Stop"))
         self.saveBtn.setText(_translate("MainWindow", "Save"))
         self.loadBtn.setText(_translate("MainWindow", "Load"))
         self.label_2.setText(_translate("MainWindow", "Times"))
-        self.lineEdit.setText(_translate("MainWindow", "0"))
+        self.lineEdit.setText(_translate("MainWindow", "1"))
